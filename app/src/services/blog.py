@@ -4,8 +4,8 @@ from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from models.blog import Post
-from schemas.blog import PostCreate, PublishPost
+from app.src.models.blog import Post
+from app.src.schemas.blog import PostCreate, PublishPost
 
 
 class BlogService:

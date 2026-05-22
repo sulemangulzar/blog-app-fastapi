@@ -27,23 +27,25 @@ A simple asynchronous blog API built with **FastAPI**, **SQLModel**, **SQLAlchem
 
 ```text
 blog-app-fastapi/
-├── api/
-│   └── dependencies.py      # FastAPI dependency providers
-├── database/
-│   └── database.py          # Async engine, session, and table creation
-├── models/
-│   └── blog.py              # SQLModel database model
-├── routers/
-│   └── routers.py           # Blog post API routes
-├── schemas/
-│   └── blog.py              # Request/response schemas
-├── services/
-│   └── blog.py              # Blog business logic and database operations
-├── config.py                # Environment-based settings
-├── main.py                  # FastAPI application entry point
-├── pyproject.toml           # Project metadata and dependencies
-├── uv.lock                  # Locked dependency versions
-├── .env.example             # Example environment variables
+├── app/
+│   └── src/
+│       ├── api/
+│       │   └── dependencies.py      # FastAPI dependency providers
+│       ├── database/
+│       │   └── database.py          # Async engine, session, and table creation
+│       ├── models/
+│       │   └── blog.py              # SQLModel database model
+│       ├── routers/
+│       │   └── routers.py           # Blog post API routes
+│       ├── schemas/
+│       │   └── blog.py              # Request/response schemas
+│       ├── services/
+│       │   └── blog.py              # Blog business logic and database operations
+│       ├── config.py                # Environment-based settings
+│       └── main.py                  # FastAPI application entry point
+├── pyproject.toml                   # Project metadata and dependencies
+├── uv.lock                          # Locked dependency versions
+├── .env.example                     # Example environment variables
 └── README.md
 ```
 
@@ -127,13 +129,13 @@ cp .env.example .env
 Start the development server:
 
 ```bash
-uv run fastapi dev main.py
+uv run fastapi dev app/src/main.py
 ```
 
 Or run with Uvicorn directly:
 
 ```bash
-uv run uvicorn main:app --reload
+uv run uvicorn app.src.main:app --reload
 ```
 
 Open the API docs:

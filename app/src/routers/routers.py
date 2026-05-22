@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
-from api.dependencies import serviceDep
-from schemas.blog import PostCreate, PostRead, PostUpdate, PublishPost
+from app.src.api.dependencies import serviceDep
+from app.src.schemas.blog import PostCreate, PostRead, PostUpdate, PublishPost
 
 router = APIRouter(prefix="/post")
 
