@@ -160,5 +160,5 @@ If you'd like, I can also add a small test for token decoding or create a short 
 
 ## License
 
-No license file is included — add one if you plan to publish this project.
+No license file is included.
 
