@@ -55,6 +55,14 @@ def decode_token(token: str) -> Optional[dict]:
     # Remove internal whitespace/newlines (useful when tokens wrap)
     token = re.sub(r"\s+", "", token)
 
+    # If the header contains extra text (commas, repeated 'Bearer', etc.),
+    # extract the first substring that looks like a JWT: three base64url
+    # segments separated by dots. This makes the function tolerant to
+    # pasted/wrapped tokens or clients that append extra values.
+    jwt_match = re.search(r"([A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+)", token)
+    if jwt_match:
+        token = jwt_match.group(1)
+
     try:
         payload = jwt.decode(
             jwt=token,
