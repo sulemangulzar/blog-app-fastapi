@@ -43,6 +43,7 @@ blog-app-fastapi/
 │       │   └── blog.py              # Blog business logic and database operations
 │       ├── config.py                # Environment-based settings
 │       └── main.py                  # FastAPI application entry point
+├── compose.yml                      # Docker Compose configuration for PostgreSQL
 ├── pyproject.toml                   # Project metadata and dependencies
 ├── uv.lock                          # Locked dependency versions
 ├── .env.example                     # Example environment variables
@@ -62,6 +63,22 @@ Base prefix: `/post`
 | `PUT` | `/post/update/{id}` | Update a blog post |
 | `DELETE` | `/post/delete/{id}` | Delete a blog post |
 
+## Authentication
+
+This app includes a simple demonstration of JWT-based authentication for learning purposes:
+
+- **Sign up**: `POST /users/signup` with JSON body `{"name": "...", "email": "...", "password": "..."}`. Returns the created user object.
+- **Login**: `POST /users/login` with JSON body `{"email": "...", "password": "..."}`. Returns a JSON object `{ "access_token": "<token>", "token_type": "bearer" }`.
+- **Protected endpoint**: `GET /users/dashboard` requires the `Authorization` header with the token:
+
+```
+Authorization: Bearer <ACCESS_TOKEN>
+```
+
+Tip: Some clients or copy/paste flows (for example scalar-fastapi) may wrap long tokens across multiple lines. If that happens, paste the token as a single continuous string (no spaces or newlines) after `Bearer `.
+
+The app's `decode_token` utility already strips common surrounding characters and internal whitespace to make pasted tokens more forgiving for beginners.
+
 ## Data Model
 
 A blog post contains:
@@ -77,7 +94,7 @@ A blog post contains:
 ## Requirements
 
 - Python `>=3.13`
-- PostgreSQL running locally or remotely
+- PostgreSQL running locally/remotely, or Docker for the local PostgreSQL container
 - `uv` installed
 
 ## Environment Variables
@@ -88,18 +105,40 @@ Create a `.env` file in the project root. You can copy `.env.example`:
 cp .env.example .env
 ```
 
-Example values:
+Example values when using the PostgreSQL service from `compose.yml`:
 
 ```env
 POSTGRES_SERVER=localhost
 POSTGRES_PORT=5432
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=postgres
-POSTGRES_DB=blog_app
-DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/blog_app
+POSTGRES_DB=fastapi
+DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/fastapi
 ```
 
 > Do not commit your real `.env` file. It may contain database credentials.
+
+## Local Database with Docker Compose
+
+This project includes `compose.yml` for running a local PostgreSQL database in Docker. Docker Compose automatically reads `compose.yml` when commands are run from the project root.
+
+Start the database in the background:
+
+```bash
+docker compose up -d
+```
+
+Stop and remove the database container and default network, while keeping the PostgreSQL volume data:
+
+```bash
+docker compose down
+```
+
+Remove the container and delete the PostgreSQL volume data as well:
+
+```bash
+docker compose down -v
+```
 
 ## Installation
 
@@ -123,6 +162,12 @@ cp .env.example .env
 ```
 
 4. Update `.env` with your PostgreSQL credentials and database name.
+
+5. If you are using the database from `compose.yml`, start it before running the app:
+
+```bash
+docker compose up -d db
+```
 
 ## Running the App
 
