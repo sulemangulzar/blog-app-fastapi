@@ -211,6 +211,8 @@ curl -X POST http://127.0.0.1:8000/users/logout \
   -H "Authorization: Bearer <JWT_TOKEN>"
 ```
 
+Logout requires a valid JWT token in the `Authorization` header. When a user logs out, the app stores the token ID in Redis so the same token cannot be used again. Make sure Redis is running with `docker compose up -d` before using logout.
+
 ## Check Code
 
 Run lint checks:
