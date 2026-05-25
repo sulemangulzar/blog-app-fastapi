@@ -1,139 +1,199 @@
 # Blog App FastAPI
 
-A simple asynchronous blog API built with FastAPI and SQLModel. This project is a learning/demo app that shows how to build async endpoints, use SQLModel for database models, and add basic JWT authentication.
+A simple async blog API built with **FastAPI**, **SQLModel**, **PostgreSQL**, and basic **JWT authentication**.
 
----
+## Features
 
-## Highlights
+- Create, read, update, publish/unpublish, and delete blog posts
+- User signup and login
+- JWT access tokens
+- Logout support with Redis token blacklist
+- Async PostgreSQL database access
+- Automatic table creation when the app starts
+- Swagger UI and Scalar API docs
 
-- CRUD endpoints for blog posts (create, read, update, publish/unpublish, delete)
-- Async database access using `asyncpg` + SQLAlchemy async engine
-- Simple JWT authentication for user actions (signup/login)
-- Interactive API docs via Swagger UI
-
-## Tech stack
+## Tech Stack
 
 - Python 3.13
 - FastAPI
 - SQLModel
-- asyncpg (PostgreSQL driver)
-- uv (dependency manager used by this project)
+- SQLAlchemy async sessions
+- PostgreSQL with `asyncpg`
+- Redis
+- PyJWT
+- Passlib / bcrypt
+- uv
+- Docker Compose
 
-## Quick Start (beginner friendly)
+## Project Structure
 
-1. Clone the repo:
-
-```bash
-git clone git@github.com:sulemangulzar/blog-app-fastapi.git
-cd blog-app-fastapi
+```text
+blog-app-fastapi/
+├── app/
+│   └── src/
+│       ├── api/              # FastAPI dependencies
+│       ├── core/             # Auth/security setup
+│       ├── database/         # PostgreSQL and Redis setup
+│       ├── models/           # SQLModel database models
+│       ├── routers/          # API routes
+│       ├── schemas/          # Request/response schemas
+│       ├── services/         # Business logic
+│       ├── config.py         # App settings
+│       └── main.py           # FastAPI app
+├── compose.yml               # PostgreSQL and Redis services
+├── pyproject.toml            # Project dependencies
+├── uv.lock                   # Locked dependencies
+└── README.md
 ```
 
-2. Copy environment file and edit values:
+## Requirements
+
+- Python `>=3.13`
+- `uv`
+- Docker and Docker Compose, or your own PostgreSQL and Redis services
+
+## Environment Variables
+
+Create a `.env` file in the project root:
 
 ```bash
 cp .env.example .env
-# then open .env and set DATABASE_URL and other values
 ```
 
-3. Install dependencies (uses `uv`):
+Example values for the services in `compose.yml`:
 
-```bash
-uv sync
+```env
+POSTGRES_SERVER=localhost
+POSTGRES_PORT=5432
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_DB=fastapi
+DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/fastapi
+
+REDIS_HOST=localhost
+REDIS_PORT=6379
+
+JWT_SECRET=change-this-secret
+JWT_ALGORITHM=HS256
 ```
 
-4. (Optional) Start a local PostgreSQL using Docker Compose:
+Do not commit your real `.env` file.
+
+## Start and Stop Databases
+
+`compose.yml` starts PostgreSQL and Redis for local development.
+
+Start both services:
 
 ```bash
 docker compose up -d
 ```
 
-5. Run the app locally:
+Check running services:
+
+```bash
+docker compose ps
+```
+
+Stop services without deleting data:
+
+```bash
+docker compose stop
+```
+
+Start stopped services again:
+
+```bash
+docker compose start
+```
+
+Stop and remove containers/network, but keep PostgreSQL data:
+
+```bash
+docker compose down
+```
+
+Stop and remove everything, including PostgreSQL volume data:
+
+```bash
+docker compose down -v
+```
+
+> `docker compose down -v` deletes the local PostgreSQL data volume.
+
+## Installation
+
+Install dependencies:
+
+```bash
+uv sync
+```
+
+## Run the App
+
+Make sure PostgreSQL and Redis are running first:
+
+```bash
+docker compose up -d
+```
+
+Start the API:
 
 ```bash
 uv run uvicorn app.src.main:app --reload
 ```
 
-Open the docs at http://127.0.0.1:8000/docs
+Open the docs:
 
----
+- Swagger UI: <http://127.0.0.1:8000/docs>
+- Scalar: <http://127.0.0.1:8000/scalar>
+- ReDoc: <http://127.0.0.1:8000/redoc>
 
-## Environment variables
+## API Endpoints
 
-Copy `.env.example` and update values. Important variable:
+### Users
 
-- `DATABASE_URL` (example): `postgresql+asyncpg://postgres:postgres@localhost:5432/fastapi`
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| `POST` | `/users/signup` | Create a user |
+| `POST` | `/users/login` | Login and get JWT token |
+| `POST` | `/users/logout` | Logout and blacklist current token |
 
-Do not commit your real `.env` file since it may contain secrets.
+### Posts
 
----
+Base prefix: `/post`
 
-## Authentication (users)
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| `GET` | `/post/all` | Get all blog posts |
+| `GET` | `/post/{id}` | Get one blog post by ID |
+| `POST` | `/post/create` | Create a new blog post |
+| `PUT` | `/post/publish/{id}` | Publish or unpublish a blog post |
+| `PUT` | `/post/update/{id}` | Update a blog post |
+| `DELETE` | `/post/delete/{id}` | Delete a blog post |
 
-This app includes a simple JWT-based authentication flow for demonstration.
+## Example Requests
 
-- Sign up: `POST /users/signup` with JSON body:
-
-```json
-{ "name": "Your Name", "email": "you@example.com", "password": "yourpassword" }
-```
-
-- Login: `POST /users/login` with JSON body:
-
-```json
-{ "email": "you@example.com", "password": "yourpassword" }
-```
-
-Response example:
-
-```json
-{ "access_token": "<JWT_TOKEN>", "token_type": "bearer" }
-```
-
-- Use the token for protected endpoints by sending an `Authorization` header:
-
-```
-Authorization: Bearer <JWT_TOKEN>
-```
-
-Tip for scalar-fastapi and other tools: some clients wrap long tokens across multiple lines when you copy them. If you paste a wrapped token, make sure it becomes a single continuous string (no spaces or line breaks) after `Bearer ` — the app already strips common surrounding characters and internal whitespace to help with this.
-
----
-
-## API endpoints (summary)
-
-- Posts (base prefix `/post`):
-  - `GET /post/all` — list posts
-  - `GET /post/{id}` — get post by id
-  - `POST /post/create` — create a post
-  - `PUT /post/update/{id}` — update a post
-  - `PUT /post/publish/{id}` — publish/unpublish
-  - `DELETE /post/delete/{id}` — delete a post
-
-- Users:
-  - `POST /users/signup` — create user
-  - `POST /users/login` — get JWT token
-  - `GET /users/dashboard` — protected example endpoint
-
----
-
-## Example requests
-
-Signup and login (example with `curl`):
+Sign up:
 
 ```bash
 curl -X POST http://127.0.0.1:8000/users/signup \
   -H "Content-Type: application/json" \
   -d '{"name":"Test User","email":"test@example.com","password":"Password123"}'
+```
 
+Login:
+
+```bash
 curl -X POST http://127.0.0.1:8000/users/login \
   -H "Content-Type: application/json" \
   -d '{"email":"test@example.com","password":"Password123"}'
 ```
 
-Call protected `dashboard` with the returned token:
+Use the returned token:
 
-```bash
-curl -H "Authorization: Bearer <JWT_TOKEN>" http://127.0.0.1:8000/users/dashboard
+```text
+Authorization: Bearer <JWT_TOKEN>
 ```
 
 Create a post:
@@ -144,21 +204,27 @@ curl -X POST http://127.0.0.1:8000/post/create \
   -d '{"title":"My First Post","content":"Hello","slug":"my-first-post","is_published":false}'
 ```
 
----
+Logout:
 
-## Notes & Next steps
+```bash
+curl -X POST http://127.0.0.1:8000/users/logout \
+  -H "Authorization: Bearer <JWT_TOKEN>"
+```
 
-- This is a learning/demo project. For production use add:
-  - Database migrations (Alembic)
-  - Tests and CI
-  - Stronger auth (refresh tokens, password reset)
-  - Input validation and consistent error schemas
+## Check Code
 
-If you'd like, I can also add a small test for token decoding or create a short CONTRIBUTING.md.
+Run lint checks:
 
----
+```bash
+uv run ruff check .
+```
+
+Compile Python files:
+
+```bash
+uv run python -m compileall app main.py
+```
 
 ## License
 
-No license file is included.
-
+No license file is currently included.

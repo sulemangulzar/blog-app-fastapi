@@ -6,19 +6,22 @@ This module keeps the code simple and readable for beginners.
 import re
 from datetime import datetime, timedelta, timezone
 from typing import Optional
+from uuid import uuid4
 
 import jwt
+from fastapi import HTTPException
 
 from app.src.config import security_settings
 
 
 def create_access_token(
     data: dict,
-    expiry: timedelta = timedelta(days=1),
+    expiry: timedelta = timedelta(seconds=25),
 ):
     token = jwt.encode(
         payload={
             **data,
+            "jti": str(uuid4()),
             "exp": datetime.now(timezone.utc) + expiry,
         },
         key=security_settings.JWT_SECRET,
@@ -70,6 +73,7 @@ def decode_token(token: str) -> Optional[dict]:
             algorithms=[security_settings.JWT_ALGORITHM],
         )
         return payload
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token Expired")
     except jwt.PyJWTError:
-        # Return None for any decode-related error (expired, malformed, bad sig)
         return None

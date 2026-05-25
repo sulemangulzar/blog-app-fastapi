@@ -1,10 +1,9 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
-from app.src.utils import decode_token
 
-from app.src.api.dependencies import userServiceDep
-from app.src.core.security import oauth_scheme
+from app.src.api.dependencies import get_access_token, userServiceDep
+from app.src.database.redis import add_jti_to_blacklist
 from app.src.schemas.user import Token, UserCreate, UserLogin, UserRead
 
 router = APIRouter(prefix="/users", tags=["Users"])
@@ -20,6 +19,8 @@ async def login_user(user: UserLogin, service: userServiceDep):
     return await service.login_user(str(user.email), user.password)
 
 
-@router.get("/dashboard")
-async def dashboard(token: Annotated[str, Depends(oauth_scheme)]):
-    return decode_token(token)
+@router.post("/logout")
+async def logout(token_data: Annotated[dict, Depends(get_access_token)]):
+    await add_jti_to_blacklist(token_data["jti"])
+
+    return {"details": "Successfully Logged Out!"}

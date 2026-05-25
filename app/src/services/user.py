@@ -1,16 +1,12 @@
-from datetime import datetime, timedelta, timezone
-
-import jwt
 from fastapi import HTTPException
 from passlib.context import CryptContext
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import col
 
-from app.src.config import security_settings
 from app.src.models.blog import UserInfo
 from app.src.schemas.user import UserCreate
-from app.src.utils import create_access_token, decode_token
+from app.src.utils import create_access_token
 
 password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -42,18 +38,13 @@ class UserService:
         result = await self.session.execute(
             select(UserInfo).where(col(UserInfo.email) == email)
         )
+
         user = result.scalar_one_or_none()
 
         if user is None or not password_context.verify(password, user.password_hash):
             raise HTTPException(
                 status_code=401, detail="Email or password is incorrect"
             )
-        token = create_access_token(
-            data={"user": {"name": user.name, "email": user.email}}
-        )
+        token = create_access_token(data={"user": {"name": user.name, "id": user.id}})
 
         return {"access_token": token, "token_type": "bearer"}
-
-        jwt.decode(
-            "token",
-        )

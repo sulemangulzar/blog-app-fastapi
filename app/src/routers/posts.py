@@ -1,13 +1,13 @@
 from fastapi import APIRouter
 
-from app.src.api.dependencies import serviceDep
+from app.src.api.dependencies import serviceDep, userDep
 from app.src.schemas.blog import PostCreate, PostRead, PostUpdate, PublishPost
 
 router = APIRouter(prefix="/post")
 
 
 @router.get("/all", response_model=list[PostRead])
-async def get_all_posts(service: serviceDep):
+async def get_all_posts(service: serviceDep, user: userDep):
     return await service.get_all()
 
 
