@@ -186,9 +186,11 @@ Login:
 
 ```bash
 curl -X POST http://127.0.0.1:8000/users/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"test@example.com","password":"Password123"}'
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "username=test@example.com&password=Password123"
 ```
+
+For Swagger UI OAuth login, enter your email in the `username` field and your password in the `password` field.
 
 Use the returned token:
 

@@ -16,7 +16,7 @@ from app.src.config import security_settings
 
 def create_access_token(
     data: dict,
-    expiry: timedelta = timedelta(seconds=25),
+    expiry: timedelta = timedelta(hours=1),
 ):
     token = jwt.encode(
         payload={

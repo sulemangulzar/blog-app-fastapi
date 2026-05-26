@@ -1,10 +1,11 @@
 from datetime import datetime
+from uuid import UUID
 
 from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.src.models.blog import Post
+from app.src.models.blog import Post, UserInfo
 from app.src.schemas.blog import PostCreate, PublishPost
 
 
@@ -17,20 +18,20 @@ class BlogService:
         posts = result.scalars().all()
         return posts
 
-    async def get(self, id: int):
+    async def get(self, id: UUID):
         post = await self.session.get(Post, id)
         if not post:
             raise HTTPException(status_code=404, detail="Post not found")
         return post
 
-    async def add(self, post: PostCreate):
-        add_post = Post(**post.model_dump())
+    async def add(self, post: PostCreate, user: UserInfo):
+        add_post = Post(**post.model_dump(), user_id=user.id)
         self.session.add(add_post)
         await self.session.commit()
         await self.session.refresh(add_post)
         return add_post
 
-    async def publish(self, id: int, data: PublishPost):
+    async def publish(self, id: UUID, data: PublishPost):
         post = await self.session.get(Post, id)
 
         if not post:
@@ -44,7 +45,7 @@ class BlogService:
 
         return post
 
-    async def update(self, id: int, data):
+    async def update(self, id: UUID, data):
         post = await self.session.get(Post, id)
 
         if not post:
@@ -61,7 +62,7 @@ class BlogService:
 
         return post
 
-    async def delete(self, id: int):
+    async def delete(self, id: UUID):
         post = await self.session.get(Post, id)
         if not post:
             raise HTTPException(status_code=404, detail="Post not found")

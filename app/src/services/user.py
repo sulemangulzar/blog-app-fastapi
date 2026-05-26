@@ -45,6 +45,8 @@ class UserService:
             raise HTTPException(
                 status_code=401, detail="Email or password is incorrect"
             )
-        token = create_access_token(data={"user": {"name": user.name, "id": user.id}})
+        token = create_access_token(
+            data={"user": {"name": user.name, "id": str(user.id)}}
+        )
 
         return {"access_token": token, "token_type": "bearer"}

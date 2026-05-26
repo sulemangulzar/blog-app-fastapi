@@ -5,6 +5,7 @@ description = "A FastAPI blog API with async PostgreSQL and SQLModel"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "alembic>=1.18.4",
     "asyncpg>=0.31.0",
     "bcrypt==4.0.1",
     "fastapi[all]>=0.136.1",

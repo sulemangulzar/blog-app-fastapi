@@ -1,4 +1,5 @@
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -27,7 +28,7 @@ async def get_access_token(token: Annotated[str, Depends(oauth_scheme)]):
 async def get_current_user(
     token_data: Annotated[dict, Depends(get_access_token)], session: sessionDep
 ):
-    return await session.get(UserInfo, token_data["user"]["id"])
+    return await session.get(UserInfo, UUID(token_data["user"]["id"]))
 
 
 def get_blog_service(session: sessionDep):

@@ -1,10 +1,11 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
+from fastapi.security import OAuth2PasswordRequestForm
 
 from app.src.api.dependencies import get_access_token, userServiceDep
 from app.src.database.redis import add_jti_to_blacklist
-from app.src.schemas.user import Token, UserCreate, UserLogin, UserRead
+from app.src.schemas.user import Token, UserCreate, UserRead
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -15,8 +16,11 @@ async def signup(user: UserCreate, service: userServiceDep):
 
 
 @router.post("/login", response_model=Token)
-async def login_user(user: UserLogin, service: userServiceDep):
-    return await service.login_user(str(user.email), user.password)
+async def login_user(
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    service: userServiceDep,
+):
+    return await service.login_user(form_data.username, form_data.password)
 
 
 @router.post("/logout")

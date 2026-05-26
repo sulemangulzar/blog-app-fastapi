@@ -1,6 +1,9 @@
 from datetime import datetime
+from uuid import UUID
 
 from pydantic import BaseModel
+
+from app.src.models.blog import UserInfo
 
 
 class PostCreate(BaseModel):
@@ -11,7 +14,8 @@ class PostCreate(BaseModel):
 
 
 class PostRead(BaseModel):
-    id: int
+    id: UUID
+    user: UserInfo
     title: str
     content: str
     slug: str
