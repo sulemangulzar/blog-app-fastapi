@@ -1,18 +1,17 @@
 [project]
-name = "blog-app-fastapi"
+name = "Blog-App"
 version = "0.1.0"
-description = "A FastAPI blog API with async PostgreSQL and SQLModel"
+description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "alembic>=1.18.4",
+    "alembic>=1.18.5",
     "asyncpg>=0.31.0",
-    "bcrypt==4.0.1",
-    "fastapi[all]>=0.136.1",
-    "greenlet>=3.5.1",
-    "passlib[bcrypt]>=1.7.4",
+    "fastapi[all]>=0.138.1",
+    "greenlet>=3.5.2",
+    "pydantic-settings>=2.14.2",
     "pyjwt>=2.13.0",
-    "redis[hiredis]>=7.4.0",
-    "scalar-fastapi>=1.8.2",
-    "sqlmodel>=0.0.38",
+    "sqlalchemy>=2.0.51",
+    "sqlmodel>=0.0.39",
+    "uvicorn>=0.49.0",
 ]
