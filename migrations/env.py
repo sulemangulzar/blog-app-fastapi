@@ -10,7 +10,6 @@ from sqlmodel import SQLModel
 # Import model modules so their tables are registered on SQLModel.metadata.
 import app.models.comment  # noqa: F401
 import app.models.post  # noqa: F401
-import app.models.post_tag  # noqa: F401
 import app.models.tags  # noqa: F401
 import app.models.user  # noqa: F401
 from app.config import settings
