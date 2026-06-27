@@ -1,8 +1,8 @@
 from datetime import datetime, timezone
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 from uuid import UUID, uuid4
 
-from sqlalchemy import Text, func
+from sqlalchemy import Column, DateTime, Text, func
 from sqlmodel import Field, Relationship, SQLModel
 
 # Protect against circular imports
@@ -23,17 +23,30 @@ class Comment(SQLModel, table=True):
     )
 
     created_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc), index=True
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_column=Column(
+            "created_at",
+            DateTime(timezone=True),
+            nullable=False,
+            server_default=func.now(),
+        ),
     )
     updated_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc),
-        sa_column_kwargs={"onupdate": func.now()},
+        sa_column=Column(DateTime(timezone=True), nullable=False, onupdate=func.now()),
     )
-    deleted_at: datetime | None = Field(default=None)
-
+    deleted_at: datetime | None = Field(
+        default=None, sa_column=Column(DateTime(timezone=True), nullable=True)
+    )
     post: "Post" = Relationship(back_populates="comments")
     author: "User" = Relationship(back_populates="comments")
 
+    parent: Optional["Comment"] = Relationship(
+        back_populates="replies", sa_relationship_kwargs={"remote_side": "Comment.id"}
+    )
+
+    # 2. Update replies to use back_populates instead of backref
     replies: list["Comment"] = Relationship(
-        sa_relationship_kwargs=dict(cascade="all, delete-orphan", backref="parent")
+        back_populates="parent",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
     )

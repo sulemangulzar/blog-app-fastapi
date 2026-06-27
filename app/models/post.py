@@ -3,7 +3,7 @@ from enum import Enum
 from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
-from sqlalchemy import Text, func
+from sqlalchemy import Column, DateTime, Text, func
 from sqlmodel import Field, Relationship, SQLModel
 
 from app.models.tags import PostTagLink, Tag
@@ -31,10 +31,13 @@ class Post(SQLModel, table=True):
     status: PostStatus = Field(default=PostStatus.DRAFT, index=True)
 
     published_at: datetime | None = Field(default=None, index=True)
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_column=Column(DateTime(timezone=True), nullable=False),
+    )
     updated_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc),
-        sa_column_kwargs={"onupdate": func.now()},
+        sa_column=Column(DateTime(timezone=True), nullable=False, onupdate=func.now()),
     )
 
     # 5. Relationships

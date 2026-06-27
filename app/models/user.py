@@ -3,7 +3,7 @@ from enum import Enum
 from uuid import UUID, uuid4
 
 from pydantic import EmailStr
-from sqlalchemy import func
+from sqlalchemy import Column, DateTime, func
 from sqlmodel import Field, Relationship, SQLModel
 
 from app.models.comment import Comment
@@ -30,11 +30,14 @@ class User(SQLModel, table=True):
     role: UserRole = Field(default=UserRole.READER)
     is_active: bool = Field(default=True)
 
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_column=Column(DateTime(timezone=True), nullable=False),
+    )
     updated_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc),
-        sa_column_kwargs={"onupdate": func.now()},
+        sa_column=Column(DateTime(timezone=True), nullable=False, onupdate=func.now()),
     )
 
     posts: list[Post] = Relationship(back_populates="author")
-    comments: list[Comment] = Relationship(back_populates="post")
+    comments: list[Comment] = Relationship(back_populates="author")

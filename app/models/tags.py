@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
+from sqlalchemy import Column, DateTime
 from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
@@ -19,6 +20,9 @@ class Tag(SQLModel, table=True):
     name: str = Field(unique=True, nullable=False, max_length=50)
     slug: str = Field(unique=True, index=True, nullable=False, max_length=50)
 
-    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        sa_column=Column(DateTime(timezone=True), nullable=False),
+    )
 
     posts: list["Post"] = Relationship(back_populates="tags", link_model=PostTagLink)
