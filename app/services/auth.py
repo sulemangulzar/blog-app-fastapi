@@ -1,14 +1,15 @@
 from uuid import UUID
 
-from fastapi import HTTPException
+import jwt
+from fastapi import HTTPException, Request
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
 
-from app.core.jwt import create_access_token, create_refresh_token
-from app.core.security import _prepare_password, verify_password
+from app.core.jwt import create_access_token, create_refresh_token, decode_token
+from app.core.security import get_hashed_password, verify_password
 from app.models.user import User
-from app.schemas.auth import RegisterUser
+from app.schemas.auth import RegisterUser, UpdateUser
 
 
 class UserService:
@@ -33,7 +34,7 @@ class UserService:
         new_user = User(
             **credentials.model_dump(exclude={"email", "password"}),
             email=str(credentials.email),
-            hashed_password=_prepare_password(credentials.password),
+            hashed_password=get_hashed_password(credentials.password),
         )
 
         self.session.add(new_user)
@@ -82,3 +83,53 @@ class UserService:
             raise HTTPException(
                 status_code=500, detail="Database error while fetching user"
             )
+
+    async def refresh(self, request: Request):
+        credentials_exception = HTTPException(
+            status_code=401,
+            detail="Invalid or expired refresh token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+        auth_header = request.headers.get("Authorization", "")
+        if not auth_header.startswith("Bearer "):
+            raise credentials_exception
+
+        token = auth_header.removeprefix("Bearer ").strip()
+
+        try:
+            payload = decode_token(token)
+        except jwt.InvalidTokenError:
+            raise credentials_exception
+
+        if payload.get("type") != "refresh":
+            raise credentials_exception
+
+        user_creds = payload.get("sub")
+        if not user_creds:
+            raise credentials_exception
+
+        user = await self.get_by_id(UUID(user_creds))
+        if not user:
+            raise credentials_exception
+
+        new_access_token = create_access_token(
+            {"sub": user_creds, "role": user.role.value}
+        )
+        return {"access_token": new_access_token, "token_type": "bearer"}
+
+    async def update(self, user_id: UUID, user_data: UpdateUser):
+        user = await self.get_by_id(user_id)
+
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        update_data_dict = user_data.model_dump(exclude_unset=True)
+        for key, value in update_data_dict.items():
+            setattr(user, key, value)
+
+        self.session.add(user)
+        await self.session.commit()
+        await self.session.refresh(user)
+
+        return user
