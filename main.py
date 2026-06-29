@@ -2,9 +2,11 @@ from fastapi import FastAPI
 from scalar_fastapi import get_scalar_api_reference
 
 from app.api.v1.routes.auth import router as auth_router
+from app.api.v1.routes.post import router as post_router
 
 app = FastAPI(title="Blog App API")
 app.include_router(auth_router)
+app.include_router(post_router)
 
 
 @app.get("/health")

@@ -8,6 +8,8 @@ from sqlmodel import Field, Relationship, SQLModel
 
 from app.models.comment import Comment
 from app.models.post import Post
+from app.models.post_bookmark import Bookmark
+from app.models.post_like import PostLike
 
 
 class UserRole(str, Enum):
@@ -41,3 +43,5 @@ class User(SQLModel, table=True):
 
     posts: list[Post] = Relationship(back_populates="author")
     comments: list[Comment] = Relationship(back_populates="author")
+    likes: list["PostLike"] = Relationship(back_populates="user")
+    bookmarks: list["Bookmark"] = Relationship(back_populates="user")

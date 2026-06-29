@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.jwt import decode_token
 from app.database import get_session
 from app.services.auth import UserService
+from app.services.post import PostService
 
 oauth_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
@@ -52,4 +53,9 @@ async def get_current_user(
     return user
 
 
+def get_post_service(session: SessionDep):
+    return PostService(session)
+
+
 UserServiceDep = Annotated[UserService, Depends(get_user_service)]
+PostServiceDep = Annotated[PostService, Depends(get_post_service)]

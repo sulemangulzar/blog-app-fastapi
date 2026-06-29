@@ -135,7 +135,7 @@ def downgrade() -> None:
     op.drop_column("user", "avatar_url")
     op.drop_column("user", "biography")
     op.drop_column("user", "display_name")
-    op.drop_constraint(None, "tag", type_="unique")
+    op.drop_constraint(None, "tag", type_="unique")  # type: ignore[arg-type]
     op.drop_index(op.f("ix_tag_slug"), table_name="tag")
     op.create_index(op.f("ix_tag_name"), "tag", ["name"], unique=True)
     op.drop_column("tag", "created_at")
@@ -162,7 +162,7 @@ def downgrade() -> None:
     op.drop_column("post", "status")
     op.drop_column("post", "excerpt")
     op.drop_column("post", "slug")
-    op.drop_constraint(None, "comment", type_="foreignkey")
+    op.drop_constraint(None, "comment", type_="foreignkey")  # type: ignore[arg-type]
     op.drop_index(op.f("ix_comment_post_id"), table_name="comment")
     op.drop_index(op.f("ix_comment_parent_comment_id"), table_name="comment")
     op.drop_index(op.f("ix_comment_created_at"), table_name="comment")
